@@ -6,7 +6,7 @@ import numpy as np
 import gym
 
 
-def test(n_episodes=100, name='LunarLander_MODIFIED_JS1.pth'):
+def test(n_episodes=100, name='LunarLander_TWO_GIVEN.pth'):
     env = LunarLander(render_mode = "human")
     policy = ActorCritic(11)
     num_wins = 0

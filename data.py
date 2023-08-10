@@ -47,10 +47,10 @@ def analysis(path, i, versions: bool):
         #for trainParameters.py
         if not versions: data_frame3 = data_frame3.append(df.iloc[[2]])
 
-    #standard deviations in dataframe
+    # standard deviations in dataframe
     std1_frame = data_frame1.std(axis = 0)
     std2_frame = data_frame2.std(axis = 0)
-    #for trainParameters.py
+    # for trainParameters.py
     if not versions: std3_frame = data_frame3.std(axis = 0)
 
     #dataframe means
@@ -192,7 +192,7 @@ def run_analysis(folder, versions):
         analysis(paths[i], i, versions)
 
 if __name__ == '__main__':
-    run_analysis(folder = "PreExperiment5", versions = True)
+    run_analysis(folder = "PreExperiment6", versions = True)
 
 #Train Episodes
 #every k Episodes, have agent play game without exploration with policy

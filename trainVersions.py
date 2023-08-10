@@ -105,10 +105,10 @@ def train(gamma, lr, eps, steps, mod, title):
 
 def run(trial:int):
     parameters = [
-        [0.99, 0.01, 3000, 1000, True], #gamma, learning rate, episodes, steps, game version
-        [0.99, 0.01, 3000, 1000, False]
+        [0.99, 0.01, 5000, 1000, True], #gamma, learning rate, episodes, steps, game version
+        [0.99, 0.01, 5000, 1000, False]
     ]
-    folder = "PreExperiment5"
+    folder = "PreExperiment6"
     
     rewards1, steps1, training_data1 = train(parameters[0][0],parameters[0][1],parameters[0][2],parameters[0][3], parameters[0][4],"MODIFIED_lr001")
     print(training_data1)

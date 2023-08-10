@@ -34,9 +34,10 @@ def train(gamma, lr, eps, steps, title):
 
     env = LunarLander() #modified LunarLander
     
-    policy = ActorCritic(11) #11 state elements in modified LunarLander
+    policy = ActorCritic(11, True) #11 state elements in modified LunarLander
     optimizer = optim.Adam(policy.parameters(), lr=lr, betas=betas)
     rewards = []
+    hitl_rewards = []
     steps_sum = []
     
     running_reward = 0
@@ -61,10 +62,14 @@ def train(gamma, lr, eps, steps, title):
 
             if human and (i_episode%20 == 0): 
                 env.render()
-                action = human_play()
-
+                human_action = human_play()
+            
+            hitl_state, hitl_reward, hitl_done, _, hitl_win = env.step(human_action)
             state, reward, done, _, win = env.step(action)
+
+            policy.hitl_rewards.append(hitl_reward)
             policy.rewards.append(reward)
+
             running_reward += reward
             episode_rewards += reward
 
@@ -107,3 +112,7 @@ train(0.99, 0.01, 3000, 800, "MODIFIED_HITL0") #Gamma, lr, episodes, steps, path
 #torch.manual_seed(random_seed)
 #env = gym.make('LunarLander-v2')
 #env.seed(random_seed)
+
+#Vector of probabilities but follow the user
+
+#history of actions and states and rewrads
