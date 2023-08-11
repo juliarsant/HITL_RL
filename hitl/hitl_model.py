@@ -6,7 +6,7 @@ import numpy as np
 
 
 class ActorCritic(nn.Module):
-    def __init__(self, state_elements:int):
+    def __init__(self, state_elements:int, human:bool):
         super(ActorCritic, self).__init__()
 
         #linear transformation (state)
@@ -17,6 +17,12 @@ class ActorCritic(nn.Module):
 
         #Evaluation of policy actions (used in critic)
         self.value_layer = nn.Linear(128, 1)
+        
+        #HITL
+        self.human = human
+        self.hitl_rewards = []
+        self.hitl_state_values = []
+        self.hitl_probsbuff = []
 
         #buffers
         self.probsbuff = []
@@ -56,19 +62,26 @@ class ActorCritic(nn.Module):
     def calculateLoss(self, gamma):
         
         # calculating discounted rewards:
-        #will be in backwards order which the rewards were calculated 
+        # will be in backwards order which the rewards were calculated 
         rewards = []
         discounted_rewards = 0
+        hitl_rewards = []
+        hitl_discounted_rewards = 0
 
-        for reward in self.rewards[::-1]: #reversed rewards
+        for reward, hitl_reward in zip(self.rewards[::-1], self.hitl_rewards[::-1]): #reversed rewards
             discounted_rewards = reward + gamma * discounted_rewards
+            hitl_discounted_rewards = hitl_reward + gamma * hitl_discounted_rewards
 
             rewards.insert(0, discounted_rewards)
+            hitl_rewards.insert(0, hitl_discounted_rewards)
 
                 
         # normalizing the rewards:
         rewards = torch.tensor(rewards)
         rewards = (rewards - rewards.mean()) / (rewards.std())
+
+        hitl_rewards = torch.tensor(hitl_rewards)
+        hitl_rewards = (hitl_rewards - hitl_rewards.mean()) / (hitl_rewards.std())
 
         loss = 0
         for prob, value, discounted_rewards in zip(self.probsbuff, self.state_values, rewards):

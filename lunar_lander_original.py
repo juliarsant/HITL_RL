@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     import pygame
 
 
-FPS = 60 #Changed from 50 to 60
+FPS = 50 #Changed from 50 to 60
 SCALE = 30.0  # affects how fast-paced the game is, forces should be adjusted as well
 
 MAIN_ENGINE_POWER = 13.0

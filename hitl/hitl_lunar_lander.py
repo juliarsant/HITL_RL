@@ -464,7 +464,7 @@ class LunarLander(gym.Env, EzPickle):
         while self.particles and (all or self.particles[0].ttl < 0):
             self.world.DestroyBody(self.particles.pop(0))
 
-    def step(self, action):
+    def step(self, action, human:bool):
         assert self.lander is not None
 
         # Update wind
@@ -643,7 +643,7 @@ class LunarLander(gym.Env, EzPickle):
             reward = -100
       
 
-        if self.render_mode == "human":
+        if human and self.render_mode == "human":
             self.render()
         return np.array(state, dtype=np.float32), reward, terminated, {}, win
 

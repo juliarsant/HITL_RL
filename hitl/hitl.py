@@ -8,12 +8,11 @@ Trains with human-in-the-loop instructions to the game.
 import pygame, time, sys, torch, random
 import pygame.time as py
 from test import test
-from model import ActorCritic
+from hitl_model import ActorCritic
 import torch.optim as optim
-from lunar_lander import LunarLander 
+from hitl_lunar_lander import LunarLander 
 
 def human_play():
-    
     pressed_keys = pygame.key.get_pressed()
 
     if pressed_keys[pygame.K_LEFT]: #left
@@ -41,9 +40,12 @@ def train(gamma, lr, eps, steps, title):
     steps_sum = []
     
     running_reward = 0
+    hitl_running_reward =0
 
     for i_episode in range(0, eps):
         episode_rewards = 0
+        hitl_episode_rewards = 0
+        
 
         if human and (i_episode%20 == 0):
             env = LunarLander(render_mode="human")
@@ -64,23 +66,23 @@ def train(gamma, lr, eps, steps, title):
                 env.render()
                 human_action = human_play()
             
-            hitl_state, hitl_reward, hitl_done, _, hitl_win = env.step(human_action)
-            state, reward, done, _, win = env.step(action)
+            state, reward, done, _, win = env.step(action, False)
+            state, reward, done, _, win = env.step(human_action, True)
 
-            policy.hitl_rewards.append(hitl_reward)
+
             policy.rewards.append(reward)
 
             running_reward += reward
             episode_rewards += reward
 
-            if render and (i_episode > 500 and i_episode%20 == 0):
-                env.render()
             if done:
                 break
+        if human and (i_episode%20 == 0):
+            print(episode_rewards)
 
         # rewards.append(episode_rewards)
         # steps_sum.append(t)
-                    
+
         # Updating the policy :
         optimizer.zero_grad()
         loss = policy.calculateLoss(gamma)
