@@ -9,7 +9,7 @@ from games.lunar_lander import LunarLander
 from games.car_racing import CarRacing
 from games.snake_game import SnakeEnv
 
-environment = CarRacing
+environment = SnakeEnv
 episodes = 10000
 steps = 600
 trials = 1
@@ -19,7 +19,7 @@ greedy_e_epsilon = 0.15
 alpha = 0.1
 seed = 10
 obs_size_values = 11
-num_actions = 5
+num_actions = 2
 run_demos = False
 algorithm_name = "simplePG"
 env_name = "car_racing"
