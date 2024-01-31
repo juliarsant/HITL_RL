@@ -15,7 +15,7 @@ Saves demonstrations from human expert.
 policy = SimplePG(num_actions=num_actions, input_size=obs_size_values, hidden_layer_size=12, learning_rate=learning_rate, decay_rate=0.99, gamma=gamma, greedy_e_epsilon=0.1, random_seed=seed)
 env = environment(render_mode="human")
 env.render()
-demo_name = demo_name_hitl
+P_id = demo_name_hitl
 
 """
 Human can play the game in real time using these keys
@@ -58,7 +58,7 @@ def human_play():
 Only saves dmonstrations
 """
 def demonstrations_only():
-    demonstrations_dict = {"demo_name": demo_name, "algorithm": algorithm_name} #dictionary of demonstrations
+    demonstrations_dict = {"Participant_ID": P_id, "algorithm": algorithm_name} #dictionary of demonstrations
     
     #Rewards per epsiode saved
     rewards_per_episode = []
@@ -143,8 +143,8 @@ def save_demonstration(environment_name, steps, states, timestamps, actions, rew
 """
 Can watch lunar lander play by itself through the saved demonstration
 """
-def play_demonstrations(demo_name_):
-    file = open('./data/demonstrations/{}.pickle'.format(demo_name_), 'rb')
+def play_demonstrations(P_id):
+    file = open('./data/demonstrations/{}.pickle'.format(P_id), 'rb')
     demo_dict = pickle.load(file)
     file.close()
     env = environment()
@@ -167,17 +167,22 @@ def play_demonstrations(demo_name_):
 """
 Save to pickle file in Data/Demonstration folder
 """
-def save_demo(demo, demo_name_):
-    with open('./data/demonstrations/{}.pickle'.format(demo_name_), 'wb') as handle:
+def save_demo(demo, P_id):
+    with open('./data/demonstrations/{}.pickle'.format(P_id), 'wb') as handle:
             pickle.dump(demo, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 """
 Runs and saves demonstrations
 """
-def main(demo_name_):
+def main(P_id):
     demo = demonstrations_only()
-    #save_demo(demo, demo_name_)
+    #save_demo(demo, P_id)
+
+def trial(P_id):
+    demo = demonstrations_only()
+    save_demo(demo, P_id)
+
 
 if __name__=="__main__":
-    main(demo_name)
+    main(P_id)
     #play_demonstrations(demo_name)
