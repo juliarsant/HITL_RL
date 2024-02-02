@@ -14,18 +14,7 @@ import sys
 sys.path.append("..")
 from games.lunar_lander import LunarLander
 from imports import environment, demo_name, seed, run_demos, steps, exploration_type, greedy_e_epsilon, gamma, learning_rate, obs_size_values, num_actions,algorithm_name, env_name, episodes, num_demos, trials
-from torchvision import transforms as T
-import numpy as np
-from collections import deque
-import random
 
-# Gym is an OpenAI toolkit for RL
-import gym
-from gym.spaces import Box
-from gym.wrappers import FrameStack
-
-from tensordict import TensorDict
-from torchrl.data import TensorDictReplayBuffer, LazyMemmapStorage
 
 # env = gym.make("CartPole-v1")
 env = LunarLander()
@@ -63,24 +52,16 @@ class DQN(nn.Module):
 
     def __init__(self, n_observations, n_actions):
         super(DQN, self).__init__()
-        self.cnn = nn.Sequential(
-            nn.Conv2d(in_channels= n_observations, out_channels=32, kernel_size=8, stride=4),
-            nn.ReLU(),
-            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=4, stride=2),
-            nn.ReLU(),
-            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1),
-            nn.ReLU(),
-            nn.Flatten(),
-            nn.Linear(3136, 512),
-            nn.ReLU(),
-            nn.Linear(512, n_actions),
-        )
-        return self.cnn
+        self.layer1 = nn.Linear(n_observations, 128)
+        self.layer2 = nn.Linear(128, 128)
+        self.layer3 = nn.Linear(128, n_actions)
 
     # Called with either one element to determine next action, or a batch
     # during optimization. Returns tensor([[left0exp,right0exp]...]).
     def forward(self, x):
-        return self.cnn(x)
+        x = F.relu(self.layer1(x))
+        x = F.relu(self.layer2(x))
+        return self.layer3(x)
     
 # BATCH_SIZE is the number of transitions sampled from the replay buffer
 # GAMMA is the discount factor as mentioned in the previous section
@@ -89,91 +70,19 @@ class DQN(nn.Module):
 # EPS_DECAY controls the rate of exponential decay of epsilon, higher means a slower decay
 # TAU is the update rate of the target network
 # LR is the learning rate of the ``AdamW`` optimizer
-BATCH_SIZE = 32
-GAMMA = 0.9
+BATCH_SIZE = 15
+GAMMA = 0.99
 EPS_START = 0.9
 EPS_END = 0.05
 EPS_DECAY = 1000
 TAU = 0.005
 LR = 1e-4
 
-env = LunarLander()
-
-class SkipFrame(gym.Wrapper):
-    def __init__(self, env, skip):
-        """Return only every `skip`-th frame"""
-        super().__init__(env)
-        self._skip = skip
-
-    def step(self, action):
-        """Repeat action, and sum reward"""
-        total_reward = 0.0
-        for i in range(self._skip):
-            # Accumulate reward and repeat the same action
-            obs, reward, done, trunk, info = self.env.step(action)
-            total_reward += reward
-            if done:
-                break
-        return obs, total_reward, done, trunk, info
-
-
-class GrayScaleObservation(gym.ObservationWrapper):
-    def __init__(self, env):
-        super().__init__(env)
-        obs_shape = self.observation_space.shape[:2]
-        self.observation_space = Box(low=0, high=255, shape=obs_shape, dtype=np.uint8)
-
-    def permute_orientation(self, observation):
-        # permute [H, W, C] array to [C, H, W] tensor
-        observation = np.transpose(observation, [2, 0, 1])
-        observation = torch.tensor(observation.copy(), dtype=torch.float)
-        return observation
-
-    def observation(self, observation):
-        observation = self.permute_orientation(observation)
-        transform = T.Grayscale()
-        observation = transform(observation)
-        return observation
-
-
-class ResizeObservation(gym.ObservationWrapper):
-    def __init__(self, env, shape):
-        super().__init__(env)
-        if isinstance(shape, int):
-            self.shape = (shape, shape)
-        else:
-            self.shape = tuple(shape)
-
-        obs_shape = self.shape + self.observation_space.shape[2:]
-        self.observation_space = Box(low=0, high=255, shape=obs_shape, dtype=np.uint8)
-
-    def observation(self, observation):
-        transforms = T.Compose(
-            [T.Resize(self.shape, antialias=True), T.Normalize(0, 255)]
-        )
-        observation = transforms(observation).squeeze(0)
-        return observation
-
-
-# Apply Wrappers to environment
-env = SkipFrame(env, skip=4)
-env = GrayScaleObservation(env)
-env = ResizeObservation(env, shape=84)
-print(gym.__version__)
-
-#env = FrameStack(env, num_stack=4)
-env = FrameStack(env, num_stack=4)
-
-# if gym.__version__ < '0.26.5':
-#     env = FrameStack(env, num_stack=4, new_step_api=True)
-# else:
-#     env = FrameStack(env, num_stack=4)
-
 # Get number of actions from gym action space
 n_actions = env.action_space.n
 # Get the number of state observations
-state, _ = env.reset()
-n_observations = (4,84,84)
+state = env.reset()
+n_observations = len(state)
 
 policy_net = DQN(n_observations, n_actions).to(device)
 target_net = DQN(n_observations, n_actions).to(device)
@@ -296,7 +205,7 @@ def store_demonstration_to_memory():
     for i in range(demo_eps):
         steps = demo_dict[i]["steps"]
         seed = demo_dict[i]["seed"]
-        state, _ = env.reset(seed=seed)
+        state = env.reset(seed=seed)
 
         episode_reward = 0
 
@@ -322,7 +231,7 @@ def store_demonstration_to_memory():
 
 for i_episode in range(num_episodes):
     # Initialize the environment and get its state
-    state, _ = env.reset()
+    state = env.reset()
     state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
     reward_sum = 0
     for t in range(500):

@@ -454,7 +454,7 @@ class LunarLander(gym.Env, EzPickle):
 
         if self.render_mode == "human":
             self.render()
-        return self.step(np.array([0, 0]) if self.continuous else 0)[0]
+        return self.step(np.array([0, 0]) if self.continuous else 0)[0], None
     
     
     def extract_parameters():
@@ -661,7 +661,6 @@ class LunarLander(gym.Env, EzPickle):
             # print("winish")
             terminated = True
             reward += +150
-            win = True
 
         if located and not self.lander.awake: #MODIFIED
             # print("win")
