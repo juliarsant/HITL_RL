@@ -1,11 +1,11 @@
 import tensorflow as tf
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input, Conv2D, Flatten, Dense, Lambda
-from tensorflow.keras.optimizers import Adam, RMSprop, Adadelta
-from tensorflow.keras import initializers
-from tensorflow.keras import regularizers
-import tensorflow.keras.backend as K
-from tensorflow.keras.losses import Huber, MSE, MAE
+from keras.models import Model
+from keras.layers import Input, Conv2D, Flatten, Dense, Lambda
+from keras.optimizers import Adam, RMSprop, Adadelta
+from keras import initializers
+from keras import regularizers
+import keras.backend as K
+from keras.losses import Huber, MSE, MAE
 import numpy as np
 
                

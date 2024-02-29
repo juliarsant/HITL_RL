@@ -1,12 +1,9 @@
-# cython: language_level=3
-
 import numpy as np
-from libc.stdint cimport uint8_t
 import pickle
 import os
 
      
-cdef class BinarySumTree:
+class BinarySumTree():
     """
     ******************* 
     ** BinarySumTree **
@@ -44,14 +41,14 @@ cdef class BinarySumTree:
     """
     
     
-    cdef public:
-        unsigned int leaf_number
-        float[::1] keys
-        unsigned int sample_size
-        unsigned int[::1] sampled_indices
-        float[::1] _sampled_keys   
-        unsigned int _height
-        unsigned int _root_id
+    # def public():
+    #     leaf_number = 0
+    #     keys = np.array(dtype=float)
+    #     sample_size = int(0)
+    #     sampled_indices = np.array(dtype=int)
+    #     _sampled_keys = np.array(dtype=float)
+    #     _height = int(0)
+    #     _root_id = int(0)
     
     def __cinit__(self, leaf_number = 2**20, leaf_keys = None, sample_size = 32, key_dtype = np.single):
         """Initialize parameters"""
@@ -67,12 +64,12 @@ cdef class BinarySumTree:
         self._sampled_keys = np.single(self.keys[self._root_id] *  np.random.random(sample_size))
 
             
-    def _construct(self, float[::1] leaf_keys):
+    def _construct(self, leaf_keys):
         """Construct a binary sum tree with the given leaf_keys.
            For details on the tree structure, see the class description."""
         
-        cdef unsigned int level, first_1, last_1, first_2, last_2
-        cdef float[::1] level_view
+        level, first_1, last_1, first_2, last_2 = leaf_keys
+        level_view = np.array(dtype=float)
         first_1 = 0
         last_1 = self.leaf_number - 1
         
@@ -89,26 +86,25 @@ cdef class BinarySumTree:
             last_1 = last_2
     
     
-    cdef unsigned int _parent(self, unsigned int index):
+    def _parent(self, index:int) -> int:
         """Return the parent index of the given index"""
         return(self.leaf_number + index // 2)
     
     
-    cdef unsigned int _left(self, unsigned int index):
+    def _left(self, index:int) -> int:
         """Return the left child index of the given index"""
         return(2 * (index - self.leaf_number))
     
     
-    cdef unsigned int _right(self, unsigned int index):
+    def _right(self, index:int):
         """Return the right child index of the given index"""
         return(2 * (index - self.leaf_number) + 1)
     
     
-    cdef unsigned int _get_index_by_key(self, float key):
+    def _get_index_by_key(self, key:float):
         """"Get the index such that: sum(self.keys[0:(index-1)]) < key <= sum(self.keys[0:index])"""
     
-        cdef unsigned int index = self._root_id
-        cdef unsigned int left
+        index = self._root_id
         while index >= self.leaf_number:
             left = self._left(index)
             if self.keys[left] >= key:
@@ -119,7 +115,7 @@ cdef class BinarySumTree:
         return(index)
     
     
-    def sample_indices(self, unsigned int sample_size = 0):
+    def sample_indices(self, sample_size = 0):
         """Sample a given number of (leaf-)indices with probabilty proportional to their keys."""
         
         if sample_size > 0:
@@ -129,21 +125,21 @@ cdef class BinarySumTree:
                                            
         # sample a number of sample_size random keys out of the interval [0, self.keys[self._root_id]]
         self._sampled_keys = np.single(self.keys[self._root_id] *  np.random.random(self.sample_size))
-        cdef unsigned int i = 0
+        i = 0
         for i in range(self.sample_size):
             self.sampled_indices[i] = self._get_index_by_key(self._sampled_keys[i])
         #return(indices)
     
     
-    def set_key(self, unsigned int index, float new_key):
+    def set_key(self, index:int, new_key:float):
         "Set the key at the given index to the given new key."
 
         # set the key of the given index to the new_key and calculate the change of the key value at this index 
-        cdef float change = new_key - self.keys[index]
+        change = float(new_key - self.keys[index])
         self.keys[index] = new_key
         
         # propagate the change iteratively up to the root
-        cdef unsigned int parent = index
+        parent = int(index)
         while parent != self._root_id:
             parent = self._parent(parent)
             self.keys[parent] += change
@@ -155,7 +151,7 @@ cdef class BinarySumTree:
     
     
     
-cdef class PrioritizedExperienceReplay:
+class PrioritizedExperienceReplay():
     
     """
         ********************************* 
@@ -223,30 +219,30 @@ cdef class PrioritizedExperienceReplay:
     """
     
     
-    cdef public:
-        unsigned int max_frame_num
-        unsigned int num_stacked_frames
-        uint8_t[:, :, ::1] frames
-        int[::1] actions
-        float[::1] rewards
-        unsigned int batch_size
-        float prio_coeff
-        float is_min_coeff
-        float is_max_coeff
-        float is_steps
-        float epsilon
-        object _priority_tree
-        uint8_t[:, :, :, ::1] _batch_frames
-        int[::1] _batch_actions
-        float[::1] _batch_rewards
-        float[::1] _batch_n_step_returns
-        uint8_t[::1] _batch_dones
-        uint8_t[::1] _batch_n_dones
-        float[::1] _batch_weights
-        int _current_index
-        bint _is_full
-        int _start_new_episode
-        int _sample_counter
+    # cdef public:
+    #     unsigned int max_frame_num
+    #     unsigned int num_stacked_frames
+    #     uint8_t[:, :, ::1] frames
+    #     int[::1] actions
+    #     float[::1] rewards
+    #     unsigned int batch_size
+    #     float prio_coeff
+    #     float is_min_coeff
+    #     float is_max_coeff
+    #     float is_steps
+    #     float epsilon
+    #     object _priority_tree
+    #     uint8_t[:, :, :, ::1] _batch_frames
+    #     int[::1] _batch_actions
+    #     float[::1] _batch_rewards
+    #     float[::1] _batch_n_step_returns
+    #     uint8_t[::1] _batch_dones
+    #     uint8_t[::1] _batch_n_dones
+    #     float[::1] _batch_weights
+    #     int _current_index
+    #     bint _is_full
+    #     int _start_new_episode
+    #     int _sample_counter
     
     
     def __cinit__(self, max_frame_num = 2**20, 
@@ -324,7 +320,7 @@ cdef class PrioritizedExperienceReplay:
             pickle.dump(memory_dict, file)
     
     
-    cdef void _restore_internal_state(self, restore_path):
+    def _restore_internal_state(self, restore_path):
         with open(restore_path, 'rb') as file:
             memory_dict = pickle.load(file)
             self.frames = memory_dict['frames']
@@ -335,17 +331,18 @@ cdef class PrioritizedExperienceReplay:
             self._current_index = memory_dict['current_index']
     
     
-    cdef void _init_experiences(self, uint8_t[:, :, ::1] frames, int[::1] actions, float[::1] rewards, 
-                                float[::1] priorities, uint8_t[::1] episode_endings):
-        cdef unsigned int index = 1
+    def _init_experiences(self, frames, actions, rewards, 
+                            priorities, episode_endings): 
+                            #uint8_t[:, :, ::1] Frames, int[::1]  actions, float[::1]  rewards, float[::1] priorities, uint8_t[::1] ep endings
+        index = 1
         self.add_experience(0, 0., frames[0], 0., episode_endings[0])
         for index in range(1, len(episode_endings)):
             self.add_experience(actions[index-1], rewards[index-1], frames[index], 
                                 priorities[index-1], episode_endings[index])
             
             
-    cdef void _set_batch_frames(self, unsigned int batch_index, int lower_index, unsigned int upper_index, bint n_step_frames):
-        cdef unsigned int shift = 0
+    def _set_batch_frames(self, batch_index:int, lower_index:int, upper_index:int, n_step_frames):
+        shift = 0
         if n_step_frames:
             shift = self.num_stacked_frames + 1
             
@@ -372,19 +369,19 @@ cdef class PrioritizedExperienceReplay:
             self._batch_frames[batch_index][(-lower_index + shift):(self.num_stacked_frames + 1 + shift)] = self.frames[:upper_index]
        
     
-    cdef int _move_index(self, unsigned int index, int amount):
-        cdef int  new_index = index + amount
+    def _move_index(self, index:int, amount:int) ->int:
+        new_index = int(index + amount)
         if new_index >= int(self.max_frame_num):
             new_index -= self.max_frame_num
         elif new_index < 0:
             new_index += self.max_frame_num
         return new_index
     
-    cdef void _set_n_step_returns(self, unsigned int start_index, unsigned int batch_index, unsigned int max_step_num, float discount_factor):
+    def _set_n_step_returns(self, start_index:int, batch_index:int, max_step_num:int, discount_factor:float):
         self._batch_n_dones[batch_index] = 0        
-        cdef unsigned int i = 0
-        cdef float n_step_return = 0
-        cdef int new_index = 0
+        i = 0
+        n_step_return = 0
+        new_index = 0
         while i < max_step_num:
             new_index = self._move_index(start_index, i)
             if self._priority_tree.keys[new_index] == 0:
@@ -400,17 +397,17 @@ cdef class PrioritizedExperienceReplay:
         self._set_batch_frames(batch_index, start_index + i + 1 - self.num_stacked_frames, start_index + 1 + i, True)
 
 
-    cdef void _get_batch_weights(self):
-        # get current total weight and size of the replay memory
-        cdef float current_size = self.max_frame_num if self._is_full else self._current_index
-        cdef float current_total_weight = self._priority_tree.get_total_weight()
+    def _get_batch_weights(self):
+        # get current total weight and size of the replay memory FLOATS
+        current_size = self.max_frame_num if self._is_full else self._current_index
+        current_total_weight = self._priority_tree.get_total_weight()
 
-        # get current beta
-        cdef float current_beta = min(self.is_max_coeff, self.is_min_coeff + self._sample_counter * (self.is_max_coeff - self.is_min_coeff) / self.is_steps)
+        # get current beta FLOATS
+        current_beta = min(self.is_max_coeff, self.is_min_coeff + self._sample_counter * (self.is_max_coeff - self.is_min_coeff) / self.is_steps)
         
         # compute sample weights of the samlped keys
-        cdef float max_weight = 0.0000001
-        cdef unsigned int i = 0
+        max_weight = 0.0000001
+        i = 0
         for i in range(self.batch_size):
             self._batch_weights[i] = (current_size * self._priority_tree.keys[self._priority_tree.sampled_indices[i]] / current_total_weight + 0.0000001)**(-current_beta)
             max_weight = self._batch_weights[i] if self._batch_weights[i] > max_weight else max_weight
@@ -470,9 +467,7 @@ cdef class PrioritizedExperienceReplay:
         self._sample_counter += 1
         
         # get experiences (state1, action, reward, state2) for the sampled indices
-        cdef unsigned int i = 0
-        cdef unsigned int sampled_index, upper_index
-        cdef int lower_index
+        i = 0
         for i in range(self.batch_size):
             sampled_index = self._priority_tree.sampled_indices[i]
             
@@ -523,21 +518,21 @@ cdef class PrioritizedExperienceReplay:
                    np.asarray(self._batch_weights))
     
     
-    cdef void _move_current_index(self):
+    def _move_current_index(self):
         self._current_index += 1
         if self._current_index >= int(self.max_frame_num):
             self._is_full = True
             self._current_index -= self.max_frame_num
     
     
-    cdef void _forget_experience(self):
-        cdef unsigned int new_start_index = self._current_index + self.num_stacked_frames - 1
+    def  _forget_experience(self):
+        new_start_index = int(self._current_index + self.num_stacked_frames - 1)
         if new_start_index >= self.max_frame_num:
             new_start_index -= self.max_frame_num
         self._priority_tree.set_key(new_start_index, 0)
     
     
-    cdef void _set_new_frame(self, uint8_t[:, ::1] new_frame):
+    def _set_new_frame(self, new_frame): #new frame uint8_t[:, ::1] 
         self._move_current_index()
         if self._is_full:
             self._forget_experience()
@@ -545,7 +540,7 @@ cdef class PrioritizedExperienceReplay:
         self._priority_tree.set_key(self._current_index, 0)
         
     
-    def add_experience(self, int action, float reward, uint8_t[:, ::1] new_frame, float priority, bint episode_done = False):
+    def add_experience(self, action:int, reward:float, new_frame, priority:float, episode_done = False): #new frame uint8_t[:, ::1]
         """Add an experience to the replay memory.
 
            -----------
@@ -589,9 +584,8 @@ cdef class PrioritizedExperienceReplay:
         self._set_new_frame(new_frame)
         
         
-    def update_mini_batch_priorities(self, float[::1] new_priorities):
+    def update_mini_batch_priorities(self, new_priorities): #new priorities float[::1] 
         """Update the priorities of the recent mini-batch with the given new_priorities."""
-        cdef unsigned int index = 0
         for index in range(self.batch_size):
             self._priority_tree.set_key(self._priority_tree.sampled_indices[index], new_priorities[index]**(self.prio_coeff))
 
