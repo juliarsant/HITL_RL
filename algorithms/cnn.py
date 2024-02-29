@@ -37,6 +37,7 @@ if is_ipython:
 
 plt.ion()
 
+# BCI data collection from Matt 
 # if GPU is to be used
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
