@@ -1,4 +1,3 @@
-import gymnasium as gym
 import math
 import random
 import matplotlib
@@ -81,7 +80,7 @@ LR = 1e-4
 # Get number of actions from gym action space
 n_actions = env.action_space.n
 # Get the number of state observations
-state = env.reset()
+state, _ = env.reset()
 n_observations = len(state)
 
 policy_net = DQN(n_observations, n_actions).to(device)
@@ -202,10 +201,10 @@ def store_demonstration_to_memory():
     demo_eps = len(demo_dict)-2
 
 
-    for i in range(demo_eps):
+    for i in range(BATCH_SIZE):
         steps = demo_dict[i]["steps"]
         seed = demo_dict[i]["seed"]
-        state = env.reset(seed=seed)
+        state, _ = env.reset(seed=seed)
 
         episode_reward = 0
 
@@ -231,7 +230,7 @@ def store_demonstration_to_memory():
 
 for i_episode in range(num_episodes):
     # Initialize the environment and get its state
-    state = env.reset()
+    state, _ = env.reset()
     state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
     reward_sum = 0
     for t in range(500):
@@ -240,7 +239,7 @@ for i_episode in range(num_episodes):
         reward = torch.tensor([reward], device=device)
         done = terminated
 
-        if terminated:
+        if terminated or win:
             next_state = None
         else:
             next_state = torch.tensor(observation, dtype=torch.float32, device=device).unsqueeze(0)
