@@ -9,10 +9,29 @@ from tensorflow import math
 argmax = math.argmax
 import time
 import os
+import gym 
 from log_training import QLearningLogger
 
-# func design 
-# take in game id and output a game 
-# 
-def wrapper():
-    print ("in progress")
+class Wrapper (gym.Env):
+
+    def __init__(self, game_id):
+        self.game = Game(game_id)
+        
+    def reset(self):
+        self.game.reset()
+        return self.game.get_observation()
+    
+    def step(self, action):
+        # Take a step in the game based on the given action
+        reward, done = self.game.take_action(action)
+        observation = self.game.get_observation()
+        return observation, reward, done, {}
+    
+    def render(self, mode='human'):
+        # Render the current state of the game
+        self.game.render()
+    
+    def close(self):
+        # Clean up resources if necessary
+        pass
+
